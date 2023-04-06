@@ -15,14 +15,16 @@ token = {
 sym_regex = regex.compile(r"[a-zA-Z_][a-zA-Z0-9_]*$")
 real_regex = regex.compile(r"(?:[0-9]+\.[0-9]*)(?:[eE][-+]?[0-9]+)?$")
 int_regex = regex.compile(r"[0-9]+$")
-space_regex = regex.compile(r"(\r\n|\s|\n)+$")
+space_regex = regex.compile(r"(\r\n|\r|\n|\u0085|\u2028|\u2029|\s)+$")
 many_ops_regex = regex.compile(r"(==|!=|<=|>=|<<<|>>>|<<|>>|\|=|&=|\^=|\+=|-=|\*=|\/=|%=)$")
 sole_ops_regex = regex.compile(r"[=+\-*\/%&|<>!]$")
+cmm_regex = regex.compile(r"#.*(\r\n|\r|\n|\u0085|\u2028|\u2029)$") # Assume comments starts with #
 
 sep_regex = regex.compile(r"[;,\(\)\[\]\{\}]$")
 
 first_sym_regex = regex.compile(r"[a-zA-Z_]")
 first_num_regex = regex.compile(r"[0-9]")
+first_cmm_regex = regex.compile(r"#")
 
 class PeekableGenerator:
 	def __init__(self, generator):
@@ -94,6 +96,8 @@ def lexer(char_stream):
 			break
 		elif regex.match(space_regex, char):
 			lexer_regex(space_regex, char_stream)
+		elif regex.match(first_cmm_regex, char):
+			lexer_regex(cmm_regex, char_stream)
 		elif regex.match(first_sym_regex, char):
 			temp_lexeme = lexer_regex(sym_regex, char_stream)[0]
 			if temp_lexeme in keyword:
