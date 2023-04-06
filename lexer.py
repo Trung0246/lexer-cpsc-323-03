@@ -68,15 +68,9 @@ def file_char_stream(file_path):
 def lexer_regex(partial_regex, peekable_char_stream, peek_only = False):
 	matched = ""
 	current_pos = 0
-	peeked_char = None
-	
-	while peekable_char_stream.peek():
-		peeked_char = peekable_char_stream.peek(current_pos if peek_only else 0)
-		if peeked_char is None:
-			break
-		current_match = partial_regex.fullmatch(matched + peeked_char, partial=True)
 
-		if current_match is None:
+	while (peeked_char := peekable_char_stream.peek(current_pos if peek_only else 0)) is not None:
+		if partial_regex.fullmatch(matched + peeked_char, partial = True) is None:
 			break
 		else:
 			matched += peeked_char
@@ -84,14 +78,12 @@ def lexer_regex(partial_regex, peekable_char_stream, peek_only = False):
 			if not peek_only:
 				next(peekable_char_stream)
 
-	return (matched, "" if peeked_char is None else peeked_char)
+	return matched, "" if peeked_char is None else peeked_char
 
 def lexer(char_stream):
 	res = []
 
-	while True:
-		char = char_stream.peek()
-
+	while (char := char_stream.peek()) is not None:
 		if char is None:
 			break
 		elif regex.match(space_regex, char):
